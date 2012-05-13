@@ -1,0 +1,117 @@
+Only in ../wireless-tools-musl/: debian
+diff -ru ../wireless-tools-musl/ifrename.c ../wireless_tools.30/ifrename.c
+--- ../wireless-tools-musl/ifrename.c	2011-07-16 14:59:54.000000000 -0700
++++ ../wireless_tools.30/ifrename.c	2007-10-16 16:12:41.000000000 -0700
+@@ -695,9 +695,9 @@
+       /* Check that it's not NULL */
+       if((ifnode->mac_len == 6) && (!memcmp(&ifnode->mac, &zero_mac, 6)))
+ 	{
+-	  fprintf(stderr, "Error: Null MAC address (`%s') at line %d\n",
+-		  ifnode->mac_filter, linenum);
+-	  return(-1);
++	  fprintf(stderr,
++		  "Warning: MAC address is null at line %d, this is dangerous...\n",
++		  linenum);
+ 	}
+ 
+       ifnode->active[SELECT_MAC] = HAS_MAC_EXACT;
+@@ -2200,11 +2200,11 @@
+ 	{
+ 	  /* If we have not yet printed an error, now is a good time ;-) */
+ 	  if(ret == -13)
+-	    fprintf(stderr, "Error: %s line %d ignored, no valid selectors.  Please correct or remove this line.\n",
+-		    filename, linenum);
++	    fprintf(stderr, "Error: Line %d ignored, no valid selectors\n",
++		    linenum);
+ 	  else
+-	    fprintf(stderr, "Error: %s line %d ignored due to above errors.  Please correct or remove this line.\n",
+-		    filename, linenum);
++	    fprintf(stderr, "Error: Line %d ignored due to prior errors\n",
++		    linenum);
+ 
+ 	  free(ifnode);
+ 	}
+diff -ru ../wireless-tools-musl/iftab.5 ../wireless_tools.30/iftab.5
+--- ../wireless-tools-musl/iftab.5	2011-07-16 14:59:54.000000000 -0700
++++ ../wireless_tools.30/iftab.5	2007-03-02 17:34:12.000000000 -0800
+@@ -50,7 +50,11 @@
+ (logical or), specify two different mappings with the same interface
+ name (one on each line).
+ .B Ifrename
+-always uses the last matching mapping in iftab.
++always use the first matching mapping starting from the
++.I end
++of
++.BR iftab ,
++therefore more restrictive mapping should be specified last.
+ .\"
+ .\" INTERFACE NAME part
+ .\"
+Only in ../wireless-tools-musl/: iwhack
+diff -ru ../wireless-tools-musl/iwlib.c ../wireless_tools.30/iwlib.c
+--- ../wireless-tools-musl/iwlib.c	2011-07-16 14:59:54.000000000 -0700
++++ ../wireless_tools.30/iwlib.c	2009-11-23 18:28:59.000000000 -0800
+@@ -676,7 +676,6 @@
+ {
+   struct iwreq		wrq;
+ 
+-  memset((char *) &wrq, 0, sizeof(struct iwreq));
+   memset((char *) info, 0, sizeof(struct wireless_config));
+ 
+   /* Get wireless name */
+Only in ../wireless-tools-musl/: iwmulticall
+Only in ../wireless-tools-musl/: iwmulticall.d
+Only in ../wireless-tools-musl/: iwmulticall.o
+Only in ../wireless-tools-musl/: iwspy
+Only in ../wireless-tools-musl/: make.err.gcc
+Only in ../wireless-tools-musl/: make.errs
+diff -ru ../wireless-tools-musl/Makefile ../wireless_tools.30/Makefile
+--- ../wireless-tools-musl/Makefile	2012-04-22 22:57:35.675063602 -0700
++++ ../wireless_tools.30/Makefile	2009-11-24 10:53:40.000000000 -0800
+@@ -9,7 +9,7 @@
+ endif
+ 
+ ## Compiler to use (modify this for cross compile).
+-CC = muslcc
++CC = gcc
+ ## Other tools you need to modify for cross compile (static lib only).
+ AR = ar
+ RANLIB = ranlib
+@@ -75,8 +75,8 @@
+ # Install directories
+ INSTALL_DIR= $(PREFIX)/sbin
+ INSTALL_LIB= $(PREFIX)/lib
+-INSTALL_INC= $(PREFIX)/usr/include
+-INSTALL_MAN= $(PREFIX)/usr/share/man
++INSTALL_INC= $(PREFIX)/include
++INSTALL_MAN= $(PREFIX)/man
+ 
+ # Various commands
+ RM = rm -f
+@@ -104,9 +104,9 @@
+ endif
+ 
+ # Other flags
+-#CFLAGS=-Os -W -Wall -Wstrict-prototypes -Wmissing-prototypes -Wshadow \
++CFLAGS=-Os -W -Wall -Wstrict-prototypes -Wmissing-prototypes -Wshadow \
+ 	-Wpointer-arith -Wcast-qual -Winline -I.
+-CFLAGS=-Os -W -Wall -Wstrict-prototypes -I. -DIW_USES_ITS_OWN_DOGFOOD -I/opt/musl/linux-headers/include -D_GNU_SOURCE -v
++#CFLAGS=-O2 -W -Wall -Wstrict-prototypes -I.
+ DEPFLAGS=-MMD
+ XCFLAGS=$(CFLAGS) $(DEPFLAGS) $(WARN) $(HEADERS) $(WELIB_FLAG) $(WEDEF_FLAG)
+ PICFLAG=-fPIC
+@@ -115,7 +115,7 @@
+ all:: $(IWLIB) $(PROGS)
+ 
+ %: %.o
+-	$(CC) $(LDFLAGS) $(STRIPFLAGS) $(XCFLAGS) -o $@ $^
++	$(CC) $(LDFLAGS) $(STRIPFLAGS) $(XCFLAGS) -o $@ $^ $(LIBS)
+ %.o: %.c wireless.h
+ 	$(CC) $(XCFLAGS) -c $<
+ %.so: %.c wireless.h
+Only in ../wireless-tools-musl/: make.muslcc
+Only in ../wireless-tools-musl/: missing-musl-headers
+Only in ../wireless-tools-musl/: .pc
+Only in ../wireless-tools-musl/: rfkill
+Only in ../wireless-tools-musl/: wireless.h
+Only in ../wireless-tools-musl/: wireless-tools_29-2ubuntu6.patch
